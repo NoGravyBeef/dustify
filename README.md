@@ -10,7 +10,7 @@
 <p align="center">
   <img src="asset/readme/image.png" width="200" alt="앱 화면 1">
   <img src="asset/readme/image copy.png" width="200" alt="앱 화면 2">
-  <img src="asset/readme/image copy2.png" width="200" alt="앱 화면 3">
+  <img src="asset/readme/image copy 2.png" width="200" alt="앱 화면 3">
 </p>
 
 ## 🚀 프로젝트 기능
