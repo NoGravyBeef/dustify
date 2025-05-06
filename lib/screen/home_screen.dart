@@ -2,7 +2,6 @@
 import 'package:dustify/component/category_stat.dart';
 import 'package:dustify/component/hourly_stat.dart';
 import 'package:dustify/component/main_stat.dart';
-import 'package:dustify/const/colors.dart';
 import 'package:dustify/model/stat_model.dart';
 import 'package:dustify/utils/status_utils.dart';
 import 'package:dustify/widget/backgound.dart';
