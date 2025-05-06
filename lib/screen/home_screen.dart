@@ -2,6 +2,7 @@
 import 'package:dustify/component/category_stat.dart';
 import 'package:dustify/component/hourly_stat.dart';
 import 'package:dustify/component/main_stat.dart';
+import 'package:dustify/const/colors.dart';
 import 'package:dustify/model/stat_model.dart';
 import 'package:dustify/utils/status_utils.dart';
 import 'package:dustify/widget/backgound.dart';
@@ -28,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleScroll() {
-    final shouldExpand = _scrollController.offset < 150;
+    final shouldExpand = _scrollController.offset < 224;
     if (_isHeaderExpanded != shouldExpand) {
       setState(() => _isHeaderExpanded = shouldExpand);
     }
@@ -57,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Scaffold(
           backgroundColor: Colors.transparent,
           drawer: Drawer(
-            backgroundColor: const Color.fromARGB(255, 196, 237, 255),
+            backgroundColor: status.lightColor,
             child: SafeArea(
               child: ListView.builder(
                 itemCount: Region.values.length,
@@ -69,9 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     selectedColor: Colors.white,
                     title: Text(
                       region.krName,
-                      style: const TextStyle(
-                        color: Color.fromARGB(255, 171, 168, 168),
-                      ),
+                      style: TextStyle(color: status.fontColor),
                     ),
                     onTap: () {
                       setState(() => _currentRegion = region);
