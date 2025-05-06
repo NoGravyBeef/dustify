@@ -1,9 +1,10 @@
+// 📄 screen/home_screen.dart
 import 'package:dustify/component/category_stat.dart';
 import 'package:dustify/component/hourly_stat.dart';
 import 'package:dustify/component/main_stat.dart';
 import 'package:dustify/model/stat_model.dart';
-import 'package:dustify/repository/stat_repository.dart';
 import 'package:dustify/utils/status_utils.dart';
+import 'package:dustify/widget/backgound.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
@@ -16,31 +17,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  ScrollController scrollController = ScrollController();
-  bool isExpanded = false;
-  Region region = Region.seoul;
+  final ScrollController _scrollController = ScrollController();
+  Region _currentRegion = Region.seoul;
+  bool _isHeaderExpanded = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
-    StatRepository.fetchData();
-    getCount();
-
-    scrollController.addListener(() {
-      bool isExpandedNow = scrollController.offset < (499 - kToolbarHeight);
-
-      if (isExpandedNow != isExpanded) {
-        setState(() {
-          isExpanded = isExpandedNow;
-        });
-      }
-    });
+    _scrollController.addListener(_handleScroll);
   }
 
-  getCount() async {
-    print(await GetIt.I<Isar>().statModels.count());
+  void _handleScroll() {
+    final shouldExpand = _scrollController.offset < 150;
+    if (_isHeaderExpanded != shouldExpand) {
+      setState(() => _isHeaderExpanded = shouldExpand);
+    }
   }
 
   @override
@@ -49,83 +40,85 @@ class _HomeScreenState extends State<HomeScreen> {
       future:
           GetIt.I<Isar>().statModels
               .filter()
-              .regionEqualTo(region)
+              .regionEqualTo(_currentRegion)
               .itemCodeEqualTo(ItemCode.PM10)
               .sortByDateTimeDesc()
               .findFirst(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Scaffold(body: CircularProgressIndicator());
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
 
-        final statModel = snapshot.data!;
-        final statusModel = StatusUtils.getStatusModelFromStat(
-          statModel: statModel,
-        );
+        final stat = snapshot.data!;
+        final status = StatusUtils.getStatusModelFromStat(statModel: stat);
+
         return Scaffold(
+          backgroundColor: Colors.transparent,
           drawer: Drawer(
-            child: ListView(
-              children: [
-                // DrawerHeader(child: Text('지역 선택')),
-                ...Region.values.map(
-                  (e) => ListTile(
-                    selected: e == region,
-                    tileColor: Colors.white,
-                    selectedTileColor: statusModel.lightColor,
-                    selectedColor: Colors.black,
+            backgroundColor: const Color.fromARGB(255, 196, 237, 255),
+            child: SafeArea(
+              child: ListView.builder(
+                itemCount: Region.values.length,
+                itemBuilder: (context, index) {
+                  final region = Region.values[index];
+                  return ListTile(
+                    selected: region == _currentRegion,
+                    selectedTileColor: Colors.white30,
+                    selectedColor: Colors.white,
+                    title: Text(
+                      region.krName,
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 171, 168, 168),
+                      ),
+                    ),
                     onTap: () {
-                      setState(() {
-                        region = e;
-                      });
-                      Navigator.of(context).pop();
+                      setState(() => _currentRegion = region);
+                      Navigator.pop(context);
                     },
-                    title: Text(e.krName),
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
           ),
-          backgroundColor: statusModel.primaryColor,
-          body: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              MainStat(
-                region: region,
-                primaryColor: statusModel.primaryColor,
-                isExpanded: isExpanded,
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    CategoryStat(
-                      region: region,
-                      darkColor: statusModel.darkColor,
-                      lightColor: statusModel.lightColor,
+          body: Stack(
+            children: [
+              StatusBackground(status: status),
+              CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  MainStat(
+                    selectedRegion: _currentRegion,
+                    mainColor: status.primaryColor,
+                    isExpanded: _isHeaderExpanded,
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 16,
+                      ),
+                      child: Column(
+                        children: [
+                          CategoryStat(
+                            region: _currentRegion,
+                            darkColor: status.darkColor,
+                            lightColor: status.lightColor.withOpacity(0.2),
+                          ),
+                          const SizedBox(height: 16),
+                          HourlyStat(
+                            targetRegion: _currentRegion,
+                            baseColor: status.darkColor,
+                            accentColor: status.lightColor.withOpacity(0.2),
+                          ),
+                        ],
+                      ),
                     ),
-                    HourlyStat(
-                      region: region,
-                      darkColor: statusModel.darkColor,
-                      lightColor: statusModel.lightColor,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
-            // Column(
-            //   children: [
-            //     MainStat(region: region),
-            //     CategoryStat(
-            //       region: region,
-            //       darkColor: statusModel.darkColor,
-            //       lightColor: statusModel.lightColor,
-            //     ),
-            //     HourlyStat(
-            //       region: region,
-            //       darkColor: statusModel.darkColor,
-            //       lightColor: statusModel.lightColor,
-            //     ),
-            //   ],
-            // ),
           ),
         );
       },

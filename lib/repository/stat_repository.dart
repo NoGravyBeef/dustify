@@ -4,39 +4,35 @@ import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 
 class StatRepository {
-  static Future<void> fetchData() async {
-    final isar = GetIt.I<Isar>();
-
-    final now = DateTime.now();
-    final compareDateTimeTarget = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      now.hour,
+  static Future<void> loadData() async {
+    final isarInstance = GetIt.I<Isar>();
+    final currentHour = DateTime.now();
+    final targetTime = DateTime(
+      currentHour.year,
+      currentHour.month,
+      currentHour.day,
+      currentHour.hour,
     );
 
-    final count =
-        await isar.statModels
+    final existingCount =
+        await isarInstance.statModels
             .filter()
-            .dateTimeEqualTo(compareDateTimeTarget)
+            .dateTimeEqualTo(targetTime)
             .count();
 
-    if (count > 0) {
-      print('데이터가 존재합니다 : count: $count');
+    if (existingCount > 0) {
+      print('이미 데이터가 존재합니다: $existingCount 개');
       return;
     }
 
-    for (ItemCode itemCode in ItemCode.values) {
-      await fetchDataByItemCode(itemCode: itemCode);
+    for (final item in ItemCode.values) {
+      await _loadDataByItem(item);
     }
   }
 
-  static Future<List<StatModel>> fetchDataByItemCode({
-    required ItemCode itemCode,
-  }) async {
-    // final itemCodeStr = itemCode == ItemCode.PM25 ? 'PM2.5' : itemCode.name;
-
-    final response = await Dio().get(
+  static Future<List<StatModel>> _loadDataByItem(ItemCode itemCode) async {
+    final dio = Dio();
+    final response = await dio.get(
       'http://apis.data.go.kr/B552584/ArpltnStatsSvc/getCtprvnMesureLIst',
       queryParameters: {
         'serviceKey':
@@ -50,63 +46,49 @@ class StatRepository {
       },
     );
 
-    final rawItemsList =
+    final items =
         (response.data['response']['body']['items'] as List)
             .cast<Map<String, dynamic>>();
-    //중요
+    final excludeKeys = ['dataGubun', 'dataTime', 'itemCode'];
 
-    List<StatModel> stats = [];
+    final List<StatModel> result = [];
 
-    final List<String> skipKeys = ['dataGubun', 'dataTime', 'itemCode'];
+    for (final entry in items) {
+      final parsedDate = DateTime.parse(entry['dataTime']);
+      for (final key in entry.keys) {
+        if (excludeKeys.contains(key)) continue;
 
-    for (Map<String, dynamic> item in rawItemsList) {
-      final datetime = item['dataTime'];
-      for (String key in item.keys) {
-        if (skipKeys.contains(key)) {
-          continue;
-        }
-        final regionStr = key;
-        final stat = item[regionStr];
-        final region = Region.values.firstWhere((e) => e.name == regionStr);
+        final value = double.tryParse(entry[key]) ?? 0.0;
+        final region = Region.values.firstWhere((r) => r.name == key);
 
-        final statModel = StatModel(
+        final model = StatModel(
           region: region,
-          stat: double.parse(stat),
-          dateTime: DateTime.parse(datetime),
+          stat: value,
+          dateTime: parsedDate,
           itemCode: itemCode,
         );
 
         final isar = GetIt.I<Isar>();
 
-        final count =
+        final exists =
             await isar.statModels
                 .filter()
                 .regionEqualTo(region)
-                .statEqualTo(double.parse(stat))
-                .dateTimeEqualTo(DateTime.parse(datetime))
+                .statEqualTo(value)
+                .dateTimeEqualTo(parsedDate)
                 .itemCodeEqualTo(itemCode)
                 .count();
 
-        if (count > 0) {
-          continue;
-        }
+        if (exists > 0) continue;
 
         await isar.writeTxn(() async {
-          await isar.statModels.put(statModel);
+          await isar.statModels.put(model);
         });
 
-        // stats = [
-        //   ...stats,
-        //   StatModel(
-        //     region: Region.values.firstWhere((e) => e.name == regionStr),
-        //     stat: double.parse(stat),
-        //     dateTime: DateTime.parse(datetime),
-        //     itemCode: itemCode,
-        //   ),
-        // ];
+        result.add(model);
       }
     }
 
-    return stats;
+    return result;
   }
 }

@@ -72,7 +72,7 @@ enum ItemCode {
   String get krName {
     switch (this) {
       case ItemCode.SO2:
-        return '미세먼지';
+        return '아황산가스';
       case ItemCode.CO:
         return '일산화탄소';
       case ItemCode.O3:
