@@ -82,19 +82,3 @@ lib/
 ├── model/            # 데이터 모델
 └── repository/       # 데이터 저장소
 ```
-
-## 📸 앱 미리보기
-
-<p align="center">
-  <img src="asset/readme/image.png" width="200" alt="앱 화면 1">
-  <img src="asset/readme/image copy.png" width="200" alt="앱 화면 2">
-  <img src="asset/readme/image copy2.png" width="200" alt="앱 화면 3">
-</p>
-
-## 🚀 프로젝트 기능
-
-- 실시간 대기질 정보 제공
-- 지역별 대기질 상태 표시
-- 대기질 예측 정보 제공
-- 사용자 맞춤 대기질 알림
-
