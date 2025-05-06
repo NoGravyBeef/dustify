@@ -20,6 +20,7 @@ class StatusUtils {
           return statModel.stat < e.minO3;
         case ItemCode.SO2:
           return statModel.stat < e.minSO2;
+        // ignore: unreachable_switch_default
         default:
           throw Exception('존재하지 않는 아이템 코드입니다.');
       }
