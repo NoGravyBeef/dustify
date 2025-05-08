@@ -6,7 +6,10 @@ graph TD
     A --> C[미세먼지 데이터 조회]
     A --> D[상태 표시]
     
-    E[Isar DB] --> F[지역 데이터]
+    L[API] --> M[공공 데이터]
+    L --> E[Isar DB]
+    
+    E --> F[지역 데이터]
     E --> G[미세먼지 상태 데이터]
     E --> H[상태 모델]
     E --> C[미세먼지 데이터 조회]
@@ -28,5 +31,10 @@ graph TD
         E
         F
         G
+    end
+    
+    subgraph 외부 서비스
+        L
+        M
     end
 ```
