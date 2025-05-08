@@ -33,6 +33,8 @@
 - `isar: 3.1.0+1` - 빠른 NoSQL 데이터베이스
 - `isar_flutter_libs: 3.1.0+1` - Flutter용 Isar
 - `path_provider: 2.1.5` - 파일 경로 제공
+- `permission_handler: ^11.0.1` - 런타임 권한 요청 (Android/iOS)
+- `device_info_plus: ^10.1.0` - 기기 정보 확인 (Android 13+ 권한 분기)
 
 #### 📊 Isar에 대한 추가 정보
 - Isar는 빠르고 효율적인 NoSQL 데이터베이스입니다
