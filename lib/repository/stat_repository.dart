@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 
 class StatRepository {
+  /// 현재 시각 기준으로 ISAR에 데이터가 없으면 API에서 데이터를 받아와 저장하는 함수
   static Future<void> loadData() async {
     final isarInstance = GetIt.I<Isar>();
     final currentHour = DateTime.now();
@@ -30,6 +31,7 @@ class StatRepository {
     }
   }
 
+  /// 특정 ItemCode(대기질 항목)에 대해 API에서 데이터를 받아와 ISAR에 저장하는 함수
   static Future<List<StatModel>> _loadDataByItem(ItemCode itemCode) async {
     final dio = Dio();
     final response = await dio.get(

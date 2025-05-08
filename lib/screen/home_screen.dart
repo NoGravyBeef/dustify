@@ -3,6 +3,7 @@ import 'package:dustify/component/category_stat.dart';
 import 'package:dustify/component/hourly_stat.dart';
 import 'package:dustify/component/main_stat.dart';
 import 'package:dustify/model/stat_model.dart';
+import 'package:dustify/repository/stat_repository.dart';
 import 'package:dustify/utils/status_utils.dart';
 import 'package:dustify/widget/backgound.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_handleScroll);
+    StatRepository.loadData().then((_) {
+      setState(() {}); // 데이터가 들어오면 UI 갱신
+    });
   }
 
   void _handleScroll() {
